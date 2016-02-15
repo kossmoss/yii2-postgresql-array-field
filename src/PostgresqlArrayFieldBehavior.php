@@ -42,6 +42,11 @@ class PostgresqlArrayFieldBehavior extends Behavior
 	protected $arrayFieldName;
 
 	/**
+	 * @var boolean if array is empty, saving null value
+	 */
+	public $onEmptySaveNull = true;
+
+	/**
 	 * @inheritdoc
 	 */
 	public function events()
@@ -130,6 +135,7 @@ class PostgresqlArrayFieldBehavior extends Behavior
 	{
 		$rawData = $this->getRawData();
 		$value = $this->_postgresqlArrayDecode($rawData);
+		$value = $value ?: [];
 		$this->getModel()->setAttribute($this->getArrayFieldName(), $value);
 
 		return $this;
@@ -195,6 +201,9 @@ class PostgresqlArrayFieldBehavior extends Behavior
 	{
 		$value = $this->getModel()->getAttribute($this->getArrayFieldName());;
 		$value = $this->_postgresqlArrayEncode($value);
+		if($value === null && $this->onEmptySaveNull == false){
+			$value = '{}';
+		}
 		$this->getModel()->setAttribute($this->getArrayFieldName(), $value);
 
 		return $this;
