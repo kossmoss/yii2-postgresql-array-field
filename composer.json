@@ -1,0 +1,21 @@
+{
+    "name": "kossmoss/yii2-postgresql-array-field",
+    "description": "Yii2 postgresql array field support behavior",
+    "license": "MIT",
+    "require": {
+        "php": ">=5.4.0",
+        "yiisoft/yii2": "*",
+    },
+    "minimum-stability": "dev",
+    "authors": [
+        {
+            "name": "Konstantin Petrov",
+            "email": "radiokoss@gmail.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "kossmoss\\PostgresqlArrayField\\": "src/"
+        }
+    }
+}
