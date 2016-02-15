@@ -12,7 +12,7 @@ Add a dependency to your project's composer.json:
 ```json
 {
 	"require": {
-		"kossmoss/yii2-postgresql-array-field": "~1.0"
+		"kossmoss/yii2-postgresql-array-field": "^0.1"
 	}
 }
 ```
