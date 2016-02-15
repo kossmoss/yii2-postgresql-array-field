@@ -32,7 +32,7 @@ use \kossmoss\PostgresqlArrayField\PostgresqlArrayFieldBehavior;
 class Model extends ActiveRecord{
 	public function behaviors() {
 		return [
-			'class' => PostgresqlArrayAccessFieldBehavior::className(),
+			'class' => PostgresqlArrayFieldBehavior::className(),
 			'arrayFieldName' => 'modelField'
 		];
 	}
