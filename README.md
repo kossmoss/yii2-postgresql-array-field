@@ -8,6 +8,7 @@ Provides PostgreSQL array fields support for yii2 models.
 Installation
 ------------
 Add a dependency to your project's composer.json:
+
 ```json
 {
 	"require": {

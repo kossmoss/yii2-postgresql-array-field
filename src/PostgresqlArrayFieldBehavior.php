@@ -126,10 +126,10 @@ class PostgresqlArrayFieldBehavior extends Behavior
 	 * Loads array field
 	 * @return $this
 	 */
-	protected function _loadArray()
+	public function _loadArray()
 	{
 		$rawData = $this->getRawData();
-		$value = $this->_postresqlArrayDecode($rawData);
+		$value = $this->_postgresqlArrayDecode($rawData);
 		$this->getModel()->setAttribute($this->getArrayFieldName(), $value);
 
 		return $this;
@@ -138,13 +138,52 @@ class PostgresqlArrayFieldBehavior extends Behavior
 	/**
 	 * Decodes PostgreSQL array data into PHP array
 	 *
-	 * @param $data
-	 * @return mixed
-	 * @todo implementation
+	 * @link http://stackoverflow.com/questions/3068683/convert-postgresql-array-to-php-array/27964420#27964420
+	 *
+	 * @param string $data PostgreSQL-encoded array
+	 *
+	 * @param int $start start position for recursive inner arrays parsing
+	 * @return array
 	 */
-	protected function _postresqlArrayDecode($data)
+	protected function _postgresqlArrayDecode($data, $start = 0)
 	{
-		return $data;
+		if (empty($data) || $data[0] != '{') {
+			return null;
+		}
+
+		$result = [];
+
+		$string = false;
+		$quote = '';
+		$len = strlen($data);
+		$v = '';
+
+		for ($i = $start + 1; $i < $len; $i++) {
+			$ch = $data[$i];
+
+			if (!$string && $ch == '}') {
+				if ($v !== '' || !empty($result)) {
+					$result[] = $v;
+				}
+				break;
+			} else if (!$string && $ch == '{') {
+				$v = $this->_postgresqlArrayDecode($data, $i);
+			} else if (!$string && $ch == ',') {
+				$result[] = $v;
+				$v = '';
+			} else if (!$string && ($ch == '"' || $ch == "'")) {
+				$string = true;
+				$quote = $ch;
+			} else if ($string && $ch == $quote && $data[$i - 1] == "\\") {
+				$v = substr($v, 0, -1) . $ch;
+			} else if ($string && $ch == $quote && $data[$i - 1] != "\\") {
+				$string = false;
+			} else {
+				$v .= $ch;
+			}
+		}
+
+		return $result;
 	}
 
 	/**
@@ -152,10 +191,10 @@ class PostgresqlArrayFieldBehavior extends Behavior
 	 *
 	 * @return $this
 	 */
-	protected function _saveArray()
+	public function _saveArray()
 	{
 		$value = $this->getModel()->getAttribute($this->getArrayFieldName());;
-		$value = $this->_postresqlArrayEncode($value);
+		$value = $this->_postgresqlArrayEncode($value);
 		$this->getModel()->setAttribute($this->getArrayFieldName(), $value);
 
 		return $this;
@@ -164,12 +203,41 @@ class PostgresqlArrayFieldBehavior extends Behavior
 	/**
 	 * Encodes PHP array into PostgreSQL array data format
 	 *
-	 * @param $value
-	 * @return mixed
-	 * @todo implementation
+	 * @param array $value
+	 * @return string PostgreSQL-encoded array
+	 * @throws \Exception
 	 */
-	protected function _postresqlArrayEncode($value)
+	protected function _postgresqlArrayEncode($value)
 	{
-		return $value;
+		if (empty($value) || !is_array($value)) {
+			return null;
+		}
+
+		$result = '{';
+		$firstElem = true;
+
+		foreach($value as $elem) {
+			// add comma before element if it is not the first one
+			if(!$firstElem){
+				$result .= ',';
+			}
+			if(is_array($elem)){
+				$result .= $this->_postgresqlArrayEncode($elem);
+			}else if(is_string($elem)){
+				if(strpos($elem, ',') !== false) {
+					$result .= '"'.$elem.'"';
+				}else{
+					$result .= $elem;
+				}
+			}else if(is_numeric($elem)){
+				$result .= $elem;
+			}else{
+				// we can only save strings and numeric
+				throw new \Exception('Array contains other than string or numeric values, can\'t save to PostgreSQL array field');
+			}
+			$firstElem = false;
+		}
+		$result .= '}';
+		return $result;
 	}
 }
