@@ -52,7 +52,9 @@ class PostgresqlArrayFieldBehavior extends Behavior
 	public function events()
 	{
 		return [
+			ActiveRecord::EVENT_INIT => '_loadArray',
 			ActiveRecord::EVENT_AFTER_FIND => '_loadArray',
+			ActiveRecord::EVENT_BEFORE_INSERT => '_saveArray',
 			ActiveRecord::EVENT_BEFORE_UPDATE => '_saveArray'
 		];
 	}
