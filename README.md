@@ -31,9 +31,11 @@ use \kossmoss\PostgresqlArrayField\PostgresqlArrayFieldBehavior;
 class Model extends ActiveRecord{
 	public function behaviors() {
 		return [
-			'class' => PostgresqlArrayFieldBehavior::className(),
-			'arrayFieldName' => 'modelField', // model's field to attach behavior
-			'onEmptySaveNull' => true // if set to false, empty array will be saved as empty PostreSQL array '{}' (default: true)
+			[
+				'class' => PostgresqlArrayFieldBehavior::className(),
+				'arrayFieldName' => 'modelField', // model's field to attach behavior
+				'onEmptySaveNull' => true // if set to false, empty array will be saved as empty PostreSQL array '{}' (default: true)
+			]
 		];
 	}
 }
